@@ -14,10 +14,9 @@ public class PlayerController : MonoBehaviour
 
     [Header("State")]
     public List<Action> abilities;
-    public Vector2 input;
-    public Vector2 mousePosition;
+    private Vector2 input;
+    private bool sprinting;
     public Vector2 velocity;
-    [SerializeField] bool sprinting;
 
     [Header("Movement Settings")]
     [SerializeField] float movementSpeed;
@@ -40,31 +39,42 @@ public class PlayerController : MonoBehaviour
     // Main Loop
     void Update()
     {
-        SetState();
-
+        SetDirection();
     }
 
-    void SetState()
+    void FixedUpdate()
     {
-        sprinting = Input.GetKey(KeyCode.LeftShift);
-        mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-    }
-
-
-    public void PlayerMovement()
-    {
-        input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
-        velocity = input * (sprinting ? movementSpeed : sprintSpeed); // Set velocity to regular or sprint speed
+        foreach (Action ability in abilities)
+        {
+            ability.Invoke();
+        }
 
         rb.velocity = velocity;
     }
 
+    public void OnMove(InputValue value)
+    {
+        input = value.Get<Vector2>();
+
+        velocity = input * (sprinting ? sprintSpeed : movementSpeed); // Set velocity to regular or sprint speed
+    }
+
+    public void OnSprint(InputValue value)
+    {
+        // sprinting = value.GetValue<bool>();
+        print(value.Get<float>());
+
+        velocity = input * (sprinting ? sprintSpeed : movementSpeed); // Set velocity to regular or sprint speed
+
+    }
+
     void SetDirection()
     {
-        attackDirection.transform.position = ((Vector2)transform.position - mousePosition).normalized;
+        var mouse = Mouse.current;
+        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
+        attackDirection.transform.localPosition = (mousePosition - (Vector2)transform.position).normalized;
     }
+
     // TODO Figure out how to use animations by just setting states
     void Animations()
     {
