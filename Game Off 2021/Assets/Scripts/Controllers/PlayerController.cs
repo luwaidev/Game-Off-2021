@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     public static PlayerController instance;
     [SerializeField] BoxCollider2D attackDirection;
+    [SerializeField] LayerMask enemyLayer;
     private Rigidbody2D rb;
     private Animator anim;
 
@@ -25,9 +26,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float movementSpeed;
 
     [Header("Dash Settings")]
-    public bool dashed;
     [SerializeField] float dashSpeed;
     [SerializeField] float dashTime;
+
+    [Header("Combat Settings")]
+    public int meleeDamage;
+
+    [Header("Cutscene Settings")]
+    [SerializeField] float loadInWaitTime;
+    [SerializeField] float loadInWalkTime;
+    [SerializeField] float loadInAfterTime;
+    [SerializeField] float loadInMovementSpeed;
+
 
     // Set References
     private void Awake()
@@ -68,6 +78,24 @@ public class PlayerController : MonoBehaviour
     {
         dashing = false;
     }
+    void SetDirection()
+    {
+        var mouse = Mouse.current;
+        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized;
+        attackDirection.transform.localPosition = mousePositionToPlayer; // Set position 
+
+        attackDirection.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x)) * Mathf.Rad2Deg;
+    }
+
+    void Animations()
+    {
+        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction, 0);
+    }
+
+
+    ////////////////////////////////////////////////////////////////
+    //                       Input Calls                          //
+    ////////////////////////////////////////////////////////////////
 
     public void OnMove(InputValue value)
     {
@@ -97,25 +125,37 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value)
     {
-        dashing = dashed = !dashed;
+        dashing = true;
     }
+
     public void OnFire(InputValue value)
     {
+        // Check melee hit
+        RaycastHit2D[] enemiesInRange = Physics2D.BoxCastAll(
+            attackDirection.bounds.center,
+            attackDirection.bounds.size,
+            attackDirection.transform.eulerAngles.z,
+            attackDirection.transform.localPosition,
+            0.01f, enemyLayer);
 
+        for (int i = 0; i < enemiesInRange.Length; i++)
+        {
+            enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
+        }
     }
 
-    void SetDirection()
-    {
-        var mouse = Mouse.current;
-        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized;
-        attackDirection.transform.localPosition = mousePositionToPlayer; // Set position 
+    ////////////////////////////////////////////////////////////////
+    //                     Cutscene Events                        //
+    ////////////////////////////////////////////////////////////////
 
-        attackDirection.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x)) * Mathf.Rad2Deg;
-    }
-
-    void Animations()
+    public IEnumerator OnSceneLoad(Vector2 direction)
     {
-        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction, 0);
+        movementLocked = true;
+        yield return new WaitForSeconds(loadInWaitTime);
+        rb.velocity = direction * loadInMovementSpeed;
+        yield return new WaitForSeconds(loadInWalkTime);
+        rb.velocity = Vector2.zero;
+        yield return new WaitForSeconds(loadInAfterTime);
     }
 
     ////////////////////////////////////////////////////////////////
@@ -131,7 +171,6 @@ public class PlayerController : MonoBehaviour
     {
         velocity = input * dashSpeed;
         movementLocked = true;
-        dashed = true;
 
         yield return new WaitForSeconds(dashTime);
 
