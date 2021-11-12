@@ -38,7 +38,7 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Sprint",
+                    "name": "Dash",
                     "type": "Value",
                     "id": "0707f03a-c1af-4423-8ed8-8e56ff5975c8",
                     "expectedControlType": "Button",
@@ -285,7 +285,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Sprint",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

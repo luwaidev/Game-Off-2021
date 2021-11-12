@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraController : MonoBehaviour
 {
     [Header("Camera Settings")]
     [SerializeField] Transform target;
     [SerializeField] float cameraSpeed;
-    [SerializeField] float offset;
+    [SerializeField] Vector2 offset;
+    [SerializeField] float mouseFollowMagnitude;
 
     // Start is called before the first frame update
     void Start()
@@ -16,8 +18,14 @@ public class CameraController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        transform.position = Vector2.Lerp(transform.position, target.transform.position, cameraSpeed);
+        Vector2 targetPosition = (Vector2)target.transform.position + offset;
+
+        var mouse = Mouse.current;
+        Vector2 mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
+
+        targetPosition += new Vector2(Mathf.Sqrt(mousePosition.x), Mathf.Sqrt(mousePosition.y)) * mouseFollowMagnitude;
+        // transform.position = Vector2.Lerp(transform.position, targetPosition, cameraSpeed);
     }
 }

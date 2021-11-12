@@ -6,5 +6,5 @@ public interface EnemyInterface
 {
     public int health { get; set; }
 
-    public void Attack();
+    public void OnHit(int damage);
 }
