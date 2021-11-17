@@ -19,11 +19,13 @@ public class PlayerController : MonoBehaviour
     private bool sprinting;
     public bool movementLocked;
     public bool dashing;
-    public string direction;
+    private string direction = "Left";
+    private string movementDirection = "Left";
     public Vector2 velocity;
 
     [Header("Movement Settings")]
     [SerializeField] float movementSpeed;
+    [SerializeField] float reverseMovementSpeed;
 
     [Header("Dash Settings")]
     [SerializeField] float dashSpeed;
@@ -62,16 +64,17 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Invoke active abilities
         foreach (Action ability in abilities)
         {
             ability.Invoke();
         }
 
-        Animations();
+        Animations(); // Set player animations
 
-        rb.velocity = velocity;
+        rb.velocity = velocity; // Set velocity
 
-        ResetValues();
+        ResetValues(); // Reset values
     }
 
     void ResetValues()
@@ -80,16 +83,30 @@ public class PlayerController : MonoBehaviour
     }
     void SetDirection()
     {
-        var mouse = Mouse.current;
-        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized;
+
+        var mouse = Mouse.current; // Get mouse
+        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized; // Get mouse positions
         attackDirection.transform.localPosition = mousePositionToPlayer; // Set position 
 
-        attackDirection.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x)) * Mathf.Rad2Deg;
+        attackDirection.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x)) * Mathf.Rad2Deg; // Set angle of object
+
+        // Set current facing direction
+        if (Mathf.Abs(mousePositionToPlayer.x) >= Mathf.Abs(mousePositionToPlayer.y))
+        {
+            direction = (mousePositionToPlayer.x >= 0) ? "Right" : "Left";
+        }
+        else
+        {
+            direction = (mousePositionToPlayer.y >= 0) ? "Up" : "Down";
+        }
+
     }
 
     void Animations()
     {
-        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction, 0);
+        // Check if walking in opposite direction
+        bool oppositeDirection = (movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right");
+        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction + (oppositeDirection ? "Back" : ""), 0); // Play animation
     }
 
 
@@ -99,35 +116,41 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove(InputValue value)
     {
-        input = value.Get<Vector2>();
+        input = value.Get<Vector2>(); // Get Vector2 input
 
         // Set current facing direction
-        if (input.magnitude != 0 && Mathf.Abs(input.x) >= Mathf.Abs(input.y))
+        if (Mathf.Abs(input.x) >= Mathf.Abs(input.y))
         {
-            direction = (input.x >= 0) ? "Right" : "Left";
+            movementDirection = (input.x >= 0) ? "Right" : "Left";
         }
         else
         {
-            direction = (input.y >= 0) ? "Up" : "Down";
+            movementDirection = (input.y >= 0) ? "Up" : "Down";
         }
 
-        if (!movementLocked) velocity = input * movementSpeed; // Set velocity to regular or sprint speed
+        // Check if walking in opposite direction
+        bool oppositeDirection = (movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right") ||
+                                 (movementDirection == "Up" && direction == "Down") || (movementDirection == "Down" && direction == "Up");
+        if (!movementLocked) velocity = input * (oppositeDirection ? reverseMovementSpeed : movementSpeed); // Set velocity to regular or reversing speed
     }
 
-    public void OnSprint(InputValue value)
+    // Called when the mouse is moved
+    public void OnMouseMove(InputValue value)
     {
-        // sprinting = value.GetValue<bool>();
-        print(value.Get<float>());
-
-        // velocity = input * (sprinting ? sprintSpeed : movementSpeed); // Set velocity to regular or sprint speed
-
+        // Check if the player is opposite to the mouse
+        bool oppositeDirection = (movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right") ||
+                                 (movementDirection == "Up" && direction == "Down") || (movementDirection == "Down" && direction == "Up");
+        if (!movementLocked) velocity = input * (oppositeDirection ? reverseMovementSpeed : movementSpeed); // Set velocity to regular or reversing speed
     }
 
+    // Called when the dash button is pressed
     public void OnDash(InputValue value)
     {
+        // Indicate dashing
         dashing = true;
     }
 
+    // Called when fire button is pressed
     public void OnFire(InputValue value)
     {
         // Check melee hit
@@ -138,6 +161,7 @@ public class PlayerController : MonoBehaviour
             attackDirection.transform.localPosition,
             0.01f, enemyLayer);
 
+        // Iterate through enemies and do damage to them
         for (int i = 0; i < enemiesInRange.Length; i++)
         {
             enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
@@ -145,9 +169,10 @@ public class PlayerController : MonoBehaviour
     }
 
     ////////////////////////////////////////////////////////////////
-    //                     Cutscene Events                        //
+    //                      Cutscene Events                       //
     ////////////////////////////////////////////////////////////////
 
+    // Walk out of darkness 
     public IEnumerator OnSceneLoad(Vector2 direction)
     {
         movementLocked = true;

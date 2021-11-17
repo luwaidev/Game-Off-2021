@@ -163,8 +163,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  cameraSpeed: 0.125
-  deadzone: 2.5
+  cameraSpeed: 0.075
+  deadzone: 3
   offset: {x: 0, y: 0}
   mouseFollowMagnitude: 0.25
 --- !u!20 &519420031
@@ -515,14 +515,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackDirection: {fileID: 1093825659}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
   movementLocked: 0
   dashing: 0
-  direction: 
   velocity: {x: 0, y: 0}
   movementSpeed: 8
-  dashed: 0
+  reverseMovementSpeed: 4
   dashSpeed: 20
   dashTime: 0.2
+  meleeDamage: 0
+  loadInWaitTime: 0
+  loadInWalkTime: 0
+  loadInAfterTime: 0
+  loadInMovementSpeed: 0
 --- !u!114 &2120258851
 MonoBehaviour:
   m_ObjectHideFlags: 0

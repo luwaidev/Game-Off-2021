@@ -23,8 +23,9 @@ public class CameraController : MonoBehaviour
     {
         Vector2 targetPosition = (Vector2)target.transform.position + offset;
 
+        // Look towards mouse
         var mouse = Mouse.current;
-        Vector2 mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
+        Vector2 mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - targetPosition;
         if (Mathf.Abs(mousePosition.x) > deadzone || Mathf.Abs(mousePosition.y) > deadzone)
         {
             Vector2 mouseOffset = new Vector2(
@@ -32,6 +33,7 @@ public class CameraController : MonoBehaviour
                 Mathf.Sign(mousePosition.y) * Mathf.Sqrt(Mathf.Abs(mousePosition.y))) * mouseFollowMagnitude;
             targetPosition += mouseOffset;
         }
+
         transform.position = (Vector3)Vector2.Lerp(transform.position, targetPosition, cameraSpeed) - Vector3.forward * 10;
 
     }
