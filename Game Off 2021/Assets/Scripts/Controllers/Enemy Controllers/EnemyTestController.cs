@@ -16,7 +16,7 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     [Header("References")]
     private Rigidbody2D rb;
     private Animator anim;
-    private List<Transform> nearbyEnemies;
+    private List<Transform> nearbyEnemies = new List<Transform>();
 
     [Header("Health Settings")]
     float shield;
@@ -34,7 +34,7 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     [SerializeField] float patrolMovementSpeed;
 
     [Header("Follow Player")]
-
+    [SerializeField] float followDistance;
     [SerializeField] float disengageDistance;
     [SerializeField] float followMovementSpeed;
     [SerializeField] float followOffset;
@@ -60,6 +60,7 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
 
         StartCoroutine((IEnumerator)info.Invoke(this, null)); // Call the next state
     }
+
     IEnumerator PatrolState()
     {
         Debug.Log("Patrol: Enter");
@@ -72,16 +73,22 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
             {
                 velocity = (patrolPosition - (Vector2)transform.position).normalized * patrolMovementSpeed;
 
-                patrolling = Vector2.Distance(transform.position, patrolPosition) < patrolMargin;
+                patrolling = !(Vector2.Distance(transform.position, patrolPosition) < patrolMargin);
             }
             else
             {
-                patrolPosition.x = patrolCenter.x + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(Random.Range(0, patrolMaxDistance)) + Mathf.Pow(patrolMaxDistance, 2f));
+                patrolPosition.x = patrolCenter.x + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-patrolMaxDistance * Random.Range(0, patrolMaxDistance) + Mathf.Pow(patrolMaxDistance, 2f)) + patrolMaxDistance);
 
-                patrolPosition.y = patrolCenter.y + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(Random.Range(0, patrolMaxDistance)) + Mathf.Pow(patrolMaxDistance, 2f));
+                patrolPosition.y = patrolCenter.y + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-patrolMaxDistance * Random.Range(0, patrolMaxDistance) + Mathf.Pow(patrolMaxDistance, 2f)) + patrolMaxDistance);
 
+                velocity = Vector2.zero;
                 yield return new WaitForSeconds(patrolWaitTime);
+
+                patrolling = true;
             }
+
+            print(patrolPosition);
+            if (Vector2.Distance(PlayerController.instance.transform.position, transform.position) < followDistance) state = State.Follow;
 
             yield return 0;
         }
@@ -160,18 +167,19 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     void Start()
     {
         NextState();
+        patrolCenter = transform.position;
     }
 
     private void FixedUpdate()
     {
-        AvoidEnemies();
+        if (nearbyEnemies.Count > 0) AvoidEnemies();
         rb.velocity = velocity;
     }
 
     void AvoidEnemies()
     {
         int closestEnemyIndex = 0;
-        float closestDistance = Vector2.Distance(transform.position, nearbyEnemies[0].position);
+        float closestDistance = Vector2.Distance(nearbyEnemies[0].position, transform.position);
         for (int i = 1; i < nearbyEnemies.Count; i++)
         {
             if (closestDistance < Vector2.Distance(nearbyEnemies[i].position, transform.position))

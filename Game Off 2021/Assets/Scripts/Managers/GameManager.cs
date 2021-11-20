@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     [Header("Scene Loading Settings")]
     [SerializeField] float sceneTransitionTime;
     public bool loadingScene;
+    public bool paused;
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(LoadScene(sceneName));
     }
+
     public IEnumerator LoadScene(string sceneName)
     {
         loadingScene = true;
@@ -43,5 +45,16 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition
         loadingScene = false;
+    }
+
+    private void Update()
+    {
+
+        Time.timeScale = paused ? 0 : 1;
+    }
+
+    public void TogglePause()
+    {
+        paused = !paused;
     }
 }
