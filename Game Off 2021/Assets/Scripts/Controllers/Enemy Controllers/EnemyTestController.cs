@@ -40,6 +40,19 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     [SerializeField] float followOffset;
     [SerializeField] float followOffsetTime;
 
+    [Header("Attack Player")]
+    [SerializeField] float attackDistance;
+    [SerializeField] float attackDamage;
+    [SerializeField] float attackVelocity;
+
+    [Header("Attack Timing")]
+    [SerializeField] float attackPauseTime;
+    [SerializeField] float attackTime;
+    [SerializeField] float attackRecoveryTime;
+
+    [Header("Hit settings")]
+    [SerializeField] float hitTime;
+    [SerializeField] float knockbackSpeed;
     [Header("Repel Settings")]
     [SerializeField] float maxRepel;
     [SerializeField] float repelFalloff;
@@ -118,6 +131,8 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
             float playerDistance = Vector2.Distance(PlayerController.instance.transform.position, transform.position);
             if (playerDistance > disengageDistance) state = State.Patrol;
 
+            // Check if player is in range to attack
+            if (playerDistance < attackDistance) state = State.Attack;
             yield return 0;
         }
         Debug.Log("Follow: Exit");
@@ -127,21 +142,31 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     IEnumerator AttackState()
     {
         Debug.Log("Attack: Enter");
-        while (state == State.Attack)
-        {
-            yield return 0;
-        }
-        Debug.Log("Attack: Exit");
+        yield return new WaitForSeconds(attackPauseTime);
+
+        Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
+        velocity = playerDirection.normalized * attackVelocity;
+
+        yield return new WaitForSeconds(attackTime);
+
+        velocity = Vector2.zero;
+        yield return new WaitForSeconds(attackRecoveryTime);
+
+        state = State.Follow;
         NextState();
     }
 
     IEnumerator HitState()
     {
         Debug.Log("Hit: Enter");
-        while (state == State.Hit)
-        {
-            yield return 0;
-        }
+
+
+        Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
+        velocity = -playerDirection * knockbackSpeed;
+
+        yield return new WaitForSeconds(hitTime);
+
+        state = State.Follow;
         Debug.Log("Hit: Exit");
         NextState();
     }

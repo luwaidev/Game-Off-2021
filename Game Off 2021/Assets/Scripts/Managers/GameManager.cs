@@ -49,7 +49,6 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-
         Time.timeScale = paused ? 0 : 1;
     }
 
