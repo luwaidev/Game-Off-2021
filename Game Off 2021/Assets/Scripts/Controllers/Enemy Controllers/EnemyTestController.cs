@@ -37,8 +37,8 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     [SerializeField] float followDistance;
     [SerializeField] float disengageDistance;
     [SerializeField] float followMovementSpeed;
-    [SerializeField] float followOffset;
     [SerializeField] float followOffsetTime;
+    [SerializeField] float followOffset;
 
     [Header("Attack Player")]
     [SerializeField] float attackDistance;
@@ -57,7 +57,20 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     [SerializeField] float maxRepel;
     [SerializeField] float repelFalloff;
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, patrolMaxDistance);
 
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, followDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackDistance);
+
+        Gizmos.color = Color.gray;
+        Gizmos.DrawWireSphere(transform.position, attackDistance);
+    }
     ////////////////////////////////////////////////////////////////
     //                           States                           //
     ////////////////////////////////////////////////////////////////
@@ -76,7 +89,7 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
 
     IEnumerator PatrolState()
     {
-        Debug.Log("Patrol: Enter");
+
         Vector2 patrolPosition = Vector2.zero;
         bool patrolling = false;
 
@@ -100,7 +113,6 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
                 patrolling = true;
             }
 
-            print(patrolPosition);
             if (Vector2.Distance(PlayerController.instance.transform.position, transform.position) < followDistance) state = State.Follow;
 
             yield return 0;
@@ -120,8 +132,8 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
             // Set velocity offset
             timeSinceVelocityChange += Time.deltaTime;
             if (timeSinceVelocityChange >= followOffsetTime) velocityOffset = new Vector2(
-                Random.Range(-followOffsetTime, followOffsetTime),
-                Random.Range(-followOffsetTime, followOffsetTime));
+                Random.Range(-followOffset, followOffset),
+                Random.Range(-followOffset, followOffset));
 
             // Set velocity with offset
             velocity = (PlayerController.instance.transform.position - transform.position).normalized * followMovementSpeed;
@@ -234,4 +246,6 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
     {
         if (other.tag == "Enemy") nearbyEnemies.Remove(other.gameObject.transform);
     }
+
+
 }

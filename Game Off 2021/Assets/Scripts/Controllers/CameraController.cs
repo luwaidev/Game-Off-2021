@@ -12,6 +12,9 @@ public class CameraController : MonoBehaviour
     [SerializeField] Vector2 offset;
     [SerializeField] float mouseFollowMagnitude;
 
+    public Vector2 maxPosition;
+    public Vector2 minPosition;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +26,8 @@ public class CameraController : MonoBehaviour
     {
         Vector2 targetPosition = (Vector2)target.transform.position + offset;
 
+        targetPosition.x = Mathf.Clamp(targetPosition.x, (minPosition.x != 0) ? minPosition.x : -100000, (maxPosition.x != 0) ? maxPosition.x : 100000);
+        targetPosition.y = Mathf.Clamp(targetPosition.y, (minPosition.y != 0) ? minPosition.y : -100000, (maxPosition.y != 0) ? maxPosition.y : 100000);
         // Look towards mouse
         var mouse = Mouse.current;
         Vector2 mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - targetPosition;

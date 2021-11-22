@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     [Header("References")]
-    private Animator anim;
+    public Animator transition;
+    public Animator pauseMenu;
 
     [Header("Scene Loading Settings")]
     [SerializeField] float sceneTransitionTime;
@@ -20,9 +22,6 @@ public class GameManager : MonoBehaviour
         if (instance != null) Destroy(gameObject);
 
         instance = this;
-
-        // Set up references
-        anim = GetComponent<Animator>();
     }
 
     public void Load(string sceneName)
@@ -33,7 +32,7 @@ public class GameManager : MonoBehaviour
     public IEnumerator LoadScene(string sceneName)
     {
         loadingScene = true;
-        anim.Play("TransitionOut", 0); // Start transitioning scene out
+        transition.SetTrigger("Transition"); // Start transitioning scene out
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition
 
         // Start loading scene
@@ -41,7 +40,7 @@ public class GameManager : MonoBehaviour
         load.allowSceneActivation = false;
         while (!load.isDone) yield return null;
 
-        anim.SetTrigger("FinishedLoadingScene"); // Start transitioning scene back
+        transition.SetTrigger("Transition"); // Start transitioning scene back
 
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition
         loadingScene = false;
@@ -50,10 +49,13 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         Time.timeScale = paused ? 0 : 1;
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame) TogglePause();
     }
 
     public void TogglePause()
     {
         paused = !paused;
+        pauseMenu.SetBool("Paused", paused);
     }
 }

@@ -4,12 +4,14 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
 public class PlayerController : MonoBehaviour
 {
     [Header("References")]
     public static PlayerController instance;
     [SerializeField] BoxCollider2D arm;
     [SerializeField] Animator armAnim;
+    [SerializeField] SpriteRenderer armSR;
     [SerializeField] LayerMask enemyLayer;
     private Rigidbody2D rb;
     private Animator anim;
@@ -23,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public string direction = "Left";
     public string movementDirection = "Left";
     public Vector2 velocity;
+    public Vector2 addedVelocity;
 
     [Header("Movement Settings")]
     [SerializeField] float movementSpeed;
@@ -34,17 +37,21 @@ public class PlayerController : MonoBehaviour
 
     [Header("Combat Settings")]
     public bool attacking;
+    [SerializeField] float attackVelocity;
     [SerializeField] float meleeTime;
     private bool attackedAgain;
     public int meleeDamage;
     public float mouseDistance;
-    public Vector2 mouseOffset;
 
     [Header("Cutscene Settings")]
     [SerializeField] float loadInWaitTime;
     [SerializeField] float loadInWalkTime;
     [SerializeField] float loadInAfterTime;
     [SerializeField] float loadInMovementSpeed;
+
+    [Header("Audio")]
+    [SerializeField] AudioClip[] runningClips;
+    private AudioSource a;
 
 
     // Set References
@@ -54,6 +61,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         armAnim = arm.gameObject.GetComponent<Animator>();
+        armSR = arm.gameObject.GetComponent<SpriteRenderer>();
     }
 
     // Start is called before the first frame update
@@ -79,23 +87,19 @@ public class PlayerController : MonoBehaviour
 
         Animations(); // Set player animations
 
-        rb.velocity = velocity; // Set velocity
+        rb.velocity = velocity + addedVelocity; // Set velocity
 
         ResetValues(); // Reset values
     }
 
     void ResetValues()
     {
-        dashing = false;
     }
     void SetDirection()
     {
 
         var mouse = Mouse.current; // Get mouse
-        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance + mouseOffset; // Get mouse positions
-        arm.transform.localPosition = mousePositionToPlayer; // Set position 
-
-        arm.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x) - Mathf.PI / 2) * Mathf.Rad2Deg; // Set angle of object
+        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
 
         // Set current facing direction
         if (Mathf.Abs(mousePositionToPlayer.x) >= Mathf.Abs(mousePositionToPlayer.y))
@@ -106,6 +110,22 @@ public class PlayerController : MonoBehaviour
         {
             direction = (mousePositionToPlayer.y >= 0) ? "Up" : "Down";
         }
+
+        if (attacking)
+        {
+            arm.transform.localPosition = mousePositionToPlayer; // Set position 
+
+            arm.transform.eulerAngles = new Vector3(0, 0, Mathf.Atan2(mousePositionToPlayer.y, mousePositionToPlayer.x) - Mathf.PI / 2) * Mathf.Rad2Deg; // Set angle of object
+
+            armSR.sortingOrder = (Mathf.Abs(mousePositionToPlayer.y) > Mathf.Abs(mousePositionToPlayer.x) && mousePositionToPlayer.y < 0) ? 1 : -1;
+        }
+        else
+        {
+            arm.transform.localPosition = Vector2.zero;
+            float angle = (Mathf.Abs(mousePositionToPlayer.x) >= Mathf.Abs(mousePositionToPlayer.y) ? (mousePositionToPlayer.x >= 0 ? -90 : 90) : (mousePositionToPlayer.y >= 0 ? 0 : 180));
+            arm.transform.eulerAngles = new Vector3(0, 0, angle); // Set angle of object
+        }
+
 
     }
 
@@ -154,7 +174,7 @@ public class PlayerController : MonoBehaviour
     public void OnDash(InputValue value)
     {
         // Indicate dashing
-        dashing = true;
+        dashing = !dashing;
     }
 
     // Called when fire button is pressed
@@ -204,6 +224,12 @@ public class PlayerController : MonoBehaviour
     {
         attacking = true;
         armAnim.Play("Arm Melee 1");
+
+
+        var mouse = Mouse.current; // Get mouse
+        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
+        addedVelocity += attackVelocity * mousePositionToPlayer;
+
         yield return new WaitForSeconds(meleeTime / 2);
         attackedAgain = false;
         OnMeleeAttack();
@@ -217,6 +243,9 @@ public class PlayerController : MonoBehaviour
             OnMeleeAttack();
             yield return new WaitForSeconds(meleeTime / 2);
         }
+
+
+        addedVelocity = Vector2.zero;
         armAnim.Play("Arm Idle");
 
         attacking = false;
@@ -235,7 +264,6 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(dashTime);
 
         velocity = input * movementSpeed;
-        dashing = false;
         movementLocked = false;
     }
 

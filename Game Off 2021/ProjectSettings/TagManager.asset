@@ -44,20 +44,23 @@ TagManager:
   - name: Ground
     uniqueID: 1571370107
     locked: 0
-  - name: Walls
-    uniqueID: 739347991
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
   - name: Enemies
     uniqueID: 3639736971
     locked: 0
-  - name: Collectables
-    uniqueID: 3277737259
+  - name: Wall Up
+    uniqueID: 739347991
     locked: 0
   - name: Player
     uniqueID: 4259803245
+    locked: 0
+  - name: Wall Down
+    uniqueID: 1101857371
+    locked: 0
+  - name: Collectables
+    uniqueID: 3277737259
     locked: 0
   - name: Foreground
     uniqueID: 3295022083
