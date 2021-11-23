@@ -60,6 +60,7 @@ public class BeeWorkerController : MonoBehaviour
         Gizmos.color = Color.gray;
         Gizmos.DrawWireSphere(transform.position, attackDistance);
     }
+
     ////////////////////////////////////////////////////////////////
     //                           States                           //
     ////////////////////////////////////////////////////////////////

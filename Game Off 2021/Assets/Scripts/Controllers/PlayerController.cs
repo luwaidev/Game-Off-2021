@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 
 public class PlayerController : MonoBehaviour
@@ -21,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 input;
     private bool sprinting;
     public bool movementLocked;
+    public bool dashed;
     public bool dashing;
     public string direction = "Left";
     public string movementDirection = "Left";
@@ -51,7 +53,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] AudioClip[] runningClips;
-    private AudioSource a;
+    [SerializeField] AudioSource runningSource;
+    [SerializeField] AudioSource meleeAttackClip;
 
 
     // Set References
@@ -89,11 +92,16 @@ public class PlayerController : MonoBehaviour
 
         rb.velocity = velocity + addedVelocity; // Set velocity
 
-        ResetValues(); // Reset values
+        Audio(); // Set audio
     }
 
-    void ResetValues()
+    void Audio()
     {
+        if (!runningSource.isPlaying && !attacking && velocity != Vector2.zero)
+        {
+            runningSource.clip = runningClips[Random.Range(0, runningClips.Length)];
+            runningSource.Play();
+        }
     }
     void SetDirection()
     {
@@ -159,6 +167,8 @@ public class PlayerController : MonoBehaviour
         bool oppositeDirection = (movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right") ||
                                  (movementDirection == "Up" && direction == "Down") || (movementDirection == "Down" && direction == "Up");
         if (!movementLocked) velocity = input * (oppositeDirection ? reverseMovementSpeed : movementSpeed); // Set velocity to regular or reversing speed
+
+
     }
 
     // Called when the mouse is moved
@@ -174,7 +184,7 @@ public class PlayerController : MonoBehaviour
     public void OnDash(InputValue value)
     {
         // Indicate dashing
-        dashing = !dashing;
+        dashed = value.Get<float>() == 1;
     }
 
     // Called when fire button is pressed
@@ -224,13 +234,14 @@ public class PlayerController : MonoBehaviour
     {
         attacking = true;
         armAnim.Play("Arm Melee 1");
-
+        meleeAttackClip.Play();
 
         var mouse = Mouse.current; // Get mouse
         Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
         addedVelocity += attackVelocity * mousePositionToPlayer;
 
         yield return new WaitForSeconds(meleeTime / 2);
+        meleeAttackClip.Play();
         attackedAgain = false;
         OnMeleeAttack();
         yield return new WaitForSeconds(meleeTime / 2);
@@ -239,6 +250,7 @@ public class PlayerController : MonoBehaviour
         {
             armAnim.Play("Arm Melee 2");
             yield return new WaitForSeconds(meleeTime / 2);
+            meleeAttackClip.Play();
             attackedAgain = false;
             OnMeleeAttack();
             yield return new WaitForSeconds(meleeTime / 2);
@@ -253,11 +265,12 @@ public class PlayerController : MonoBehaviour
     public void Dash()
     {
 
-        if (dashing && !movementLocked) StartCoroutine(DashCoroutine());
+        if (dashed && !movementLocked) StartCoroutine(DashCoroutine());
     }
 
     IEnumerator DashCoroutine()
     {
+        dashed = false;
         velocity = input * dashSpeed;
         movementLocked = true;
 

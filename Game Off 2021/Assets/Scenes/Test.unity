@@ -4508,6 +4508,16 @@ Tilemap:
       m_TileObjectToInstantiateIndex: 65535
       dummyAlignment: 0
       m_AllTileFlags: 1073741825
+  - first: {x: -12, y: 42, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 23
+      m_TileSpriteIndex: 14
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
   - first: {x: -69, y: 43, z: 0}
     second:
       serializedVersion: 2
@@ -6726,7 +6736,7 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: 6db925ce51fa44241b1888146b1b8ee7, type: 2}
   - m_RefCount: 1
     m_Data: {fileID: 11400000, guid: ce41432f766ed7f44a6b5ec27f2ea382, type: 2}
-  - m_RefCount: 7
+  - m_RefCount: 8
     m_Data: {fileID: 11400000, guid: f0464376b5a735440af3c8bb939160ec, type: 2}
   - m_RefCount: 11
     m_Data: {fileID: 11400000, guid: 6986988be96256d4c95c676da2f28217, type: 2}
@@ -6771,7 +6781,7 @@ Tilemap:
     m_Data: {fileID: 2358632204781044685, guid: b68d145e228f97349b5cb139b8964ba6, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: -2580068442992976546, guid: b68d145e228f97349b5cb139b8964ba6, type: 3}
-  - m_RefCount: 7
+  - m_RefCount: 8
     m_Data: {fileID: 6610826472545962868, guid: b68d145e228f97349b5cb139b8964ba6, type: 3}
   - m_RefCount: 29
     m_Data: {fileID: -9015891239724245987, guid: 2eedbac01f5aab84caf93eed3e1d35ea, type: 3}
@@ -6806,7 +6816,7 @@ Tilemap:
   - m_RefCount: 1
     m_Data: {fileID: 8300685358047929209, guid: 2eedbac01f5aab84caf93eed3e1d35ea, type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 627
+  - m_RefCount: 628
     m_Data:
       e00: 1
       e01: 0
@@ -6825,7 +6835,7 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 627
+  - m_RefCount: 628
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -12883,6 +12893,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   movementLocked: 0
+  dashed: 0
   dashing: 0
   direction: Left
   movementDirection: Left
@@ -12905,6 +12916,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 8ed137b387c32504ab408f84ae08c07e, type: 3}
   - {fileID: 8300000, guid: c73661c07b818e14384535c342e57437, type: 3}
   - {fileID: 8300000, guid: 4ade63e4e3d240343b31057e79be9a67, type: 3}
+  runningSource: {fileID: 2120258855}
+  meleeAttackClip: {fileID: 0}
 --- !u!114 &2120258851
 MonoBehaviour:
   m_ObjectHideFlags: 0
