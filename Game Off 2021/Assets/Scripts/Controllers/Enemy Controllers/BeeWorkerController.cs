@@ -67,6 +67,7 @@ public class BeeWorkerController : MonoBehaviour
     void NextState()
     {
         string methodName = state.ToString() + "State";
+        print(methodName);
 
         // Get method
         System.Reflection.MethodInfo info =
