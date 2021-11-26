@@ -149,7 +149,37 @@ public class NailBeeController : MonoBehaviour
         }
         Debug.Log("Follow: Exit");
         NextState();
+
+
     }
+
+    // void ForYushi()
+    // {
+    //     string cards = "ABCDEFGH";
+    //     string chosenLetters = "";
+    //     char[][] grid = new char[4][4];
+    //     for (int i = 0; i < grid.length; i++)
+    //     {
+    //         for (int j = 0; j < grid[i].length; j++)
+    //         {
+    //             int randomCard = (int)(Math.random() * 8);
+    //             while (chosenLetters.count(cards.charAt(randomCard)) > 2)
+    //             {
+    //                 randomCard = (int)(Math.random() * 8);
+    //             }
+    //             grid[i][j] = cards.charAt(randomCard);
+    //             // System.out.println(randomCard);
+    //         }
+    //     }
+    //     for (char[] x : grid)
+    //     {
+    //         for (char y : x)
+    //         {
+    //             System.out.print(y + " ");
+    //         }
+    //         System.out.println();
+    //     }
+    // }
 
     IEnumerator AttackState()
     {
