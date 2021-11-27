@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Enemy
+  - Player
   - 
   - 
   - 
@@ -47,11 +47,11 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Enemies
-    uniqueID: 3639736971
-    locked: 0
   - name: Wall Up
     uniqueID: 739347991
+    locked: 0
+  - name: Enemies
+    uniqueID: 3639736971
     locked: 0
   - name: Player
     uniqueID: 4259803245

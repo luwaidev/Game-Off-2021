@@ -123,28 +123,21 @@ public class NailBeeController : MonoBehaviour
 
     IEnumerator FollowState()
     {
-        Vector2 velocityOffset = Vector2.zero;
-        float timeSinceVelocityChange = 0;
 
         Debug.Log("Follow: Enter");
         while (state == State.Follow)
         {
-            // Set velocity offset
-            timeSinceVelocityChange += Time.deltaTime;
-            if (timeSinceVelocityChange >= followOffsetTime) velocityOffset = new Vector2(
-                Random.Range(-followOffset, followOffset),
-                Random.Range(-followOffset, followOffset));
+            Vector2 playerPosition = PlayerController.instance.transform.position;
+            if (Vector2.Distance(playerPosition, transform.position) > disengageDistance) state = State.Patrol;
+            else if (Vector2.Distance(playerPosition, transform.position) > attackDistance)
+            {
+                velocity = (playerPosition - (Vector2)transform.position).normalized * followMovementSpeed;
+            }
+            else if (Vector2.Distance(playerPosition, transform.position) < attackDistance)
+            {
 
-            // Set velocity with offset
-            velocity = (PlayerController.instance.transform.position - transform.position).normalized * followMovementSpeed;
-            velocity += velocityOffset;
+            }
 
-            // Check if player is out of range to follow
-            float playerDistance = Vector2.Distance(PlayerController.instance.transform.position, transform.position);
-            if (playerDistance > disengageDistance) state = State.Patrol;
-
-            // Check if player is in range to attack
-            if (playerDistance < attackDistance) state = State.Attack;
             yield return 0;
         }
         Debug.Log("Follow: Exit");

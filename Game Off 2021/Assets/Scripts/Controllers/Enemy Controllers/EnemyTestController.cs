@@ -117,7 +117,6 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
 
             yield return 0;
         }
-        Debug.Log("Patrol: Exit");
         NextState();
     }
 
@@ -126,7 +125,6 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
         Vector2 velocityOffset = Vector2.zero;
         float timeSinceVelocityChange = 0;
 
-        Debug.Log("Follow: Enter");
         while (state == State.Follow)
         {
             // Set velocity offset
@@ -147,13 +145,11 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
             if (playerDistance < attackDistance) state = State.Attack;
             yield return 0;
         }
-        Debug.Log("Follow: Exit");
         NextState();
     }
 
     IEnumerator AttackState()
     {
-        Debug.Log("Attack: Enter");
         yield return new WaitForSeconds(attackPauseTime);
 
         Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
@@ -170,7 +166,6 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
 
     IEnumerator HitState()
     {
-        Debug.Log("Hit: Enter");
 
 
         Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
@@ -179,18 +174,15 @@ public class EnemyTestController : MonoBehaviour, EnemyInterface
         yield return new WaitForSeconds(hitTime);
 
         state = State.Follow;
-        Debug.Log("Hit: Exit");
         NextState();
     }
 
     IEnumerator DieState()
     {
-        Debug.Log("Die: Enter");
         while (state == State.Die)
         {
             yield return 0;
         }
-        Debug.Log("Die: Exit");
     }
 
     ////////////////////////////////////////////////////////////////
