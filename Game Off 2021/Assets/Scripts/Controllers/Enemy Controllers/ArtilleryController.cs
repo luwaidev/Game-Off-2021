@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArtilleryController : MonoBehaviour
+public class ArtilleryController : MonoBehaviour, EnemyInterface
 {
     public enum State
     {
@@ -31,18 +31,15 @@ public class ArtilleryController : MonoBehaviour
     public float minDistance;
     public GameObject projectile;
     public GameObject target;
+    public Sprite dropSprite;
 
     [Header("Projectile Settings")]
     public float warningTime;
     public float projectileSpeed;
+    public Transform firePosition;
 
     [Header("Hit settings")]
     [SerializeField] float hitTime;
-    [SerializeField] float knockbackSpeed;
-    [Header("Repel Settings")]
-    [SerializeField] float maxRepel;
-    [SerializeField] float repelFalloff;
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
@@ -69,50 +66,55 @@ public class ArtilleryController : MonoBehaviour
     }
     IEnumerator IdleState()
     {
-        Debug.Log("Hit: Enter");
 
 
-        Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
-        velocity = -playerDirection * knockbackSpeed;
-
-        yield return new WaitForSeconds(hitTime);
-
+        while (state == State.Idle)
+        {
+            if (Vector2.Distance(transform.position, PlayerController.instance.transform.position) < aggroDistance)
+            {
+                state = State.Firing;
+            }
+            yield return 0;
+        }
         // state = State.Follow;
-        Debug.Log("Hit: Exit");
         NextState();
     }
 
     IEnumerator FiringState()
     {
+        anim.Play("Artillery Fire");
 
+        yield return new WaitForSeconds(0.3f);
 
+        Rigidbody2D p = Instantiate(projectile, firePosition.position, Quaternion.identity).GetComponent<Rigidbody2D>();
+        p.velocity = Vector2.up * projectileSpeed;
         yield return new WaitForSeconds(attackTime);
 
         Vector2 position = PlayerController.instance.transform.position;
-        Instantiate(target, position, Quaternion.identity);
+        p.transform.position = new Vector2(position.x, p.transform.position.y);
+        p.velocity = Vector2.zero;
+        Animator t = Instantiate(target, position, Quaternion.identity).GetComponent<Animator>();
         yield return new WaitForSeconds(warningTime);
 
-        Transform p = Instantiate(target, position + Vector2.up * 6, Quaternion.identity).transform;
+        p.velocity = Vector2.down * projectileSpeed;
+        while (Vector2.Distance(p.position, t.transform.position) > 0.25f) yield return null;
+        Destroy(p.gameObject);
 
-        while (Vector2.Distance(p.position, transform.position) < 0.5f) yield return null;
-
+        t.Play("Target Hit");
         state = (Vector2.Distance(PlayerController.instance.transform.position, transform.position) < aggroDistance) ?
             State.Firing : State.Idle;
+
+
+        yield return new WaitForSeconds(warningTime / 2);
         NextState();
     }
 
     IEnumerator HitState()
     {
-        Debug.Log("Hit: Enter");
-
-
-        Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
-        velocity = -playerDirection * knockbackSpeed;
 
         yield return new WaitForSeconds(hitTime);
 
-        // state = State.Follow;
-        Debug.Log("Hit: Exit");
+        state = State.Firing;
         NextState();
     }
 
@@ -133,6 +135,7 @@ public class ArtilleryController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     void Start()
@@ -142,26 +145,9 @@ public class ArtilleryController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (nearbyEnemies.Count > 0) AvoidEnemies();
         rb.velocity = velocity;
     }
 
-    void AvoidEnemies()
-    {
-        int closestEnemyIndex = 0;
-        float closestDistance = Vector2.Distance(nearbyEnemies[0].position, transform.position);
-        for (int i = 1; i < nearbyEnemies.Count; i++)
-        {
-            if (closestDistance < Vector2.Distance(nearbyEnemies[i].position, transform.position))
-            {
-                closestDistance = Vector2.Distance(nearbyEnemies[i].position, transform.position);
-                closestEnemyIndex = i;
-            }
-        }
-
-        Vector2 enemyToSelf = (nearbyEnemies[closestEnemyIndex].position - transform.position) * repelFalloff;
-        velocity += new Vector2(-Mathf.Pow(enemyToSelf.x, 1f / 3f), -Mathf.Pow(enemyToSelf.x, 1f / 3f)) + Vector2.one * maxRepel;
-    }
 
     public void OnHit(int damage)
     {

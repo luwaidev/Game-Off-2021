@@ -14,10 +14,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Animator armAnim;
     [SerializeField] SpriteRenderer armSR;
     [SerializeField] LayerMask enemyLayer;
+    private BoxCollider2D bc;
     private Rigidbody2D rb;
     private Animator anim;
 
     [Header("State")]
+    public int health;
     public List<Action> abilities;
     private Vector2 input;
     private bool sprinting;
@@ -44,6 +46,8 @@ public class PlayerController : MonoBehaviour
     private bool attackedAgain;
     public int meleeDamage;
     public float mouseDistance;
+    public float stunTime;
+    public float knockbackSpeed;
 
     [Header("Cutscene Settings")]
     [SerializeField] float loadInWaitTime;
@@ -63,6 +67,7 @@ public class PlayerController : MonoBehaviour
         instance = this;
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        bc = GetComponent<BoxCollider2D>();
         armAnim = arm.gameObject.GetComponent<Animator>();
         armSR = arm.gameObject.GetComponent<SpriteRenderer>();
     }
@@ -88,7 +93,8 @@ public class PlayerController : MonoBehaviour
             ability.Invoke();
         }
 
-        Animations(); // Set player animations
+        CheckHit();
+        if (!movementLocked) Animations(); // Set player animations
 
         rb.velocity = velocity + addedVelocity; // Set velocity
 
@@ -137,11 +143,32 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    void CheckHit()
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.2f, enemyLayer);
+        if (hit && !movementLocked)
+        {
+            velocity = -hit.collider.transform.position.normalized * knockbackSpeed;
+
+            StartCoroutine(Hit());
+        }
+    }
+
+    IEnumerator Hit()
+    {
+        anim.Play("Player Hit " + direction); // Play animation
+        movementLocked = true;
+        health -= 1;
+        yield return new WaitForSeconds(stunTime);
+        movementLocked = false;
+        velocity = Vector2.zero;
+    }
+
     void Animations()
     {
         // Check if walking in opposite direction
         bool oppositeDirection = rb.velocity.magnitude > 0.01f && ((movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right"));
-        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction + (oppositeDirection ? " Back" : ""), 0); // Play animation
+        anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction + (oppositeDirection ? " Back" : "")); // Play animation
     }
 
 
@@ -234,7 +261,6 @@ public class PlayerController : MonoBehaviour
     {
         attacking = true;
         armAnim.Play("Arm Melee 1");
-        meleeAttackClip.Play();
 
         var mouse = Mouse.current; // Get mouse
         Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions

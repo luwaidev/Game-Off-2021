@@ -6,6 +6,7 @@ public class NailBeeController : MonoBehaviour
 {
     public enum State
     {
+        Idle,
         Patrol,
         Follow,
         Attack,
@@ -37,18 +38,11 @@ public class NailBeeController : MonoBehaviour
     [SerializeField] float followDistance;
     [SerializeField] float disengageDistance;
     [SerializeField] float followMovementSpeed;
-    [SerializeField] float followOffsetTime;
-    [SerializeField] float followOffset;
 
     [Header("Attack Player")]
     [SerializeField] float attackDistance;
-    [SerializeField] float attackDamage;
-    [SerializeField] float attackVelocity;
-
-    [Header("Attack Timing")]
-    [SerializeField] float attackPauseTime;
+    public static float attackDamage;
     [SerializeField] float attackTime;
-    [SerializeField] float attackRecoveryTime;
 
     [Header("Hit settings")]
     [SerializeField] float hitTime;
@@ -87,6 +81,21 @@ public class NailBeeController : MonoBehaviour
         StartCoroutine((IEnumerator)info.Invoke(this, null)); // Call the next state
     }
 
+    IEnumerator IdleState()
+    {
+
+
+        while (state == State.Idle)
+        {
+
+
+            if (Vector2.Distance(PlayerController.instance.transform.position, transform.position) < followDistance) state = State.Follow;
+            yield return 0;
+
+        }
+        NextState();
+    }
+
     IEnumerator PatrolState()
     {
 
@@ -115,32 +124,42 @@ public class NailBeeController : MonoBehaviour
 
             if (Vector2.Distance(PlayerController.instance.transform.position, transform.position) < followDistance) state = State.Follow;
 
+            anim.Play("Nail Walk " + Direction());
             yield return 0;
+
         }
-        Debug.Log("Patrol: Exit");
         NextState();
     }
 
     IEnumerator FollowState()
     {
 
-        Debug.Log("Follow: Enter");
         while (state == State.Follow)
         {
             Vector2 playerPosition = PlayerController.instance.transform.position;
-            if (Vector2.Distance(playerPosition, transform.position) > disengageDistance) state = State.Patrol;
-            else if (Vector2.Distance(playerPosition, transform.position) > attackDistance)
+            float playerDistance = Vector2.Distance(playerPosition, transform.position);
+            if (playerDistance > disengageDistance) state = State.Patrol;
+            else if (playerDistance > attackDistance)
             {
                 velocity = (playerPosition - (Vector2)transform.position).normalized * followMovementSpeed;
             }
-            else if (Vector2.Distance(playerPosition, transform.position) < attackDistance)
+            else if (playerDistance < attackDistance)
             {
+                float xDistance = playerPosition.x - transform.position.x;
+                float yDistance = playerPosition.y - transform.position.y;
 
+                velocity.x = (Mathf.Abs(xDistance) > Mathf.Abs(yDistance)) ? followMovementSpeed * Mathf.Sign(xDistance) : 0;
+                velocity.y = (Mathf.Abs(yDistance) > Mathf.Abs(xDistance)) ? followMovementSpeed * Mathf.Sign(yDistance) : 0;
+
+                if (xDistance < 0.2f || yDistance < 0.2f)
+                {
+                    state = State.Attack;
+                }
             }
 
+            anim.Play("Nail Walk " + Direction());
             yield return 0;
         }
-        Debug.Log("Follow: Exit");
         NextState();
 
 
@@ -172,48 +191,38 @@ public class NailBeeController : MonoBehaviour
     //         }
     //         System.out.println();
     //     }
-    // }
+    // }    
 
     IEnumerator AttackState()
     {
-        Debug.Log("Attack: Enter");
-        yield return new WaitForSeconds(attackPauseTime);
-
-        Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
-        velocity = playerDirection.normalized * attackVelocity;
-
-        yield return new WaitForSeconds(attackTime);
-
+        anim.Play("Nail Attack " + Direction());
         velocity = Vector2.zero;
-        yield return new WaitForSeconds(attackRecoveryTime);
+        yield return new WaitForSeconds(attackTime);
+        anim.Play("Nail Idle " + Direction());
 
+        yield return new WaitForSeconds(attackTime / 2);
         state = State.Follow;
         NextState();
     }
 
     IEnumerator HitState()
     {
-        Debug.Log("Hit: Enter");
-
-
+        anim.Play("Nail Hit " + Direction());
         Vector2 playerDirection = PlayerController.instance.transform.position - transform.position;
         velocity = -playerDirection * knockbackSpeed;
 
         yield return new WaitForSeconds(hitTime);
 
         state = State.Follow;
-        Debug.Log("Hit: Exit");
         NextState();
     }
 
     IEnumerator DieState()
     {
-        Debug.Log("Die: Enter");
         while (state == State.Die)
         {
             yield return 0;
         }
-        Debug.Log("Die: Exit");
     }
 
     ////////////////////////////////////////////////////////////////
@@ -222,8 +231,24 @@ public class NailBeeController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
+    string Direction()
+    {
+        Vector2 playerPosition = PlayerController.instance.transform.position;
+        float xDistance = playerPosition.x - transform.position.x;
+        float yDistance = playerPosition.y - transform.position.y;
+
+        if (Mathf.Abs(xDistance) > Mathf.Abs(yDistance))
+        {
+            return (xDistance > 0) ? "Right" : "Left";
+        }
+        else
+        {
+            return (yDistance > 0) ? "Up" : "Down";
+        }
+    }
     void Start()
     {
         NextState();
