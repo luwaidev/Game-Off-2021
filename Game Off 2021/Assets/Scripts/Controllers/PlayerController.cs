@@ -287,7 +287,7 @@ public class PlayerController : MonoBehaviour
         // Iterate through enemies and do damage to them
         for (int i = 0; i < enemiesInRange.Length; i++)
         {
-            enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
+            if (!enemiesInRange[i].collider.isTrigger) enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
         }
     }
 
