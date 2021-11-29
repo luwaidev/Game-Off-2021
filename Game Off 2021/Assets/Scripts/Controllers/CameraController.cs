@@ -11,6 +11,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] float deadzone;
     [SerializeField] Vector2 offset;
     [SerializeField] float mouseFollowMagnitude;
+    public bool inCutscene;
 
     public Vector2 maxPosition;
     public Vector2 minPosition;
@@ -40,7 +41,7 @@ public class CameraController : MonoBehaviour
 
         targetPosition.x = Mathf.Clamp(targetPosition.x, (minPosition.x != 0) ? minPosition.x : -100000, (maxPosition.x != 0) ? maxPosition.x : 100000);
         targetPosition.y = Mathf.Clamp(targetPosition.y, (minPosition.y != 0) ? minPosition.y : -100000, (maxPosition.y != 0) ? maxPosition.y : 100000);
-        transform.position = (Vector3)Vector2.Lerp(transform.position, targetPosition, cameraSpeed) - Vector3.forward * 10;
+        if (!inCutscene) transform.position = (Vector3)Vector2.Lerp(transform.position, targetPosition, cameraSpeed) - Vector3.forward * 10;
 
     }
 }

@@ -25,7 +25,6 @@ public class PlayerController : MonoBehaviour
     private bool sprinting;
     public bool movementLocked;
     public bool dashed;
-    public bool dashing;
     public string direction = "Left";
     public string movementDirection = "Left";
     public Vector2 velocity;
@@ -48,6 +47,13 @@ public class PlayerController : MonoBehaviour
     public float mouseDistance;
     public float stunTime;
     public float knockbackSpeed;
+
+    [Header("Shooting Settings")]
+    public Transform firePosition;
+    public bool shootIcicle;
+    public int icicleDamage;
+    public float icicleTime;
+    public GameObject icicle;
 
     [Header("Cutscene Settings")]
     [SerializeField] float loadInWaitTime;
@@ -77,6 +83,7 @@ public class PlayerController : MonoBehaviour
     {
         abilities = new List<Action>();
         abilities.Add(Dash);
+        StartCoroutine(OnSceneLoad());
     }
 
     // Main Loop
@@ -99,6 +106,13 @@ public class PlayerController : MonoBehaviour
         rb.velocity = velocity + addedVelocity; // Set velocity
 
         Audio(); // Set audio
+        ResetValues();
+    }
+
+    void ResetValues()
+    {
+        shootIcicle = false;
+        dashed = false;
     }
 
     void Audio()
@@ -162,6 +176,8 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(stunTime);
         movementLocked = false;
         velocity = Vector2.zero;
+
+        if (health <= 0) { Dead(); }
     }
 
     void Animations()
@@ -169,6 +185,14 @@ public class PlayerController : MonoBehaviour
         // Check if walking in opposite direction
         bool oppositeDirection = rb.velocity.magnitude > 0.01f && ((movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right"));
         anim.Play("Player " + (rb.velocity.magnitude > 0.01f ? "Walk " : "Idle ") + direction + (oppositeDirection ? " Back" : "")); // Play animation
+    }
+
+    void Dead()
+    {
+        movementLocked = true;
+        arm.gameObject.SetActive(false);
+        anim.SetBool("Dead", true);
+        GameManager.instance.Load("Game");
     }
 
 
@@ -211,13 +235,20 @@ public class PlayerController : MonoBehaviour
     public void OnDash(InputValue value)
     {
         // Indicate dashing
-        dashed = value.Get<float>() == 1;
+        if (!movementLocked) dashed = value.Get<float>() == 1;
     }
 
     // Called when fire button is pressed
     public void OnFire(InputValue value)
     {
-        if (!attacking) StartCoroutine(MeleeAttackCoroutine());
+        if (!attacking && !movementLocked) StartCoroutine(MeleeAttackCoroutine());
+        else attackedAgain = true;
+    }
+
+    // Called when fire button is pressed
+    public void OnShoot(InputValue value)
+    {
+        if (!attacking && !movementLocked) StartCoroutine(MeleeAttackCoroutine());
         else attackedAgain = true;
     }
 
@@ -226,14 +257,17 @@ public class PlayerController : MonoBehaviour
     ////////////////////////////////////////////////////////////////
 
     // Walk out of darkness 
-    public IEnumerator OnSceneLoad(Vector2 direction)
+    public IEnumerator OnSceneLoad()
     {
+        anim.Play("Player Wake");
         movementLocked = true;
+        Camera.main.GetComponent<CameraController>().inCutscene = true;
+        arm.gameObject.SetActive(false);
         yield return new WaitForSeconds(loadInWaitTime);
-        rb.velocity = direction * loadInMovementSpeed;
-        yield return new WaitForSeconds(loadInWalkTime);
-        rb.velocity = Vector2.zero;
-        yield return new WaitForSeconds(loadInAfterTime);
+        arm.gameObject.SetActive(true);
+        Camera.main.GetComponent<CameraController>().inCutscene = false;
+        movementLocked = false;
+        attackedAgain = false;
     }
 
     ////////////////////////////////////////////////////////////////
@@ -262,9 +296,10 @@ public class PlayerController : MonoBehaviour
         attacking = true;
         armAnim.Play("Arm Melee 1");
 
+        movementLocked = true;
         var mouse = Mouse.current; // Get mouse
         Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
-        addedVelocity += attackVelocity * mousePositionToPlayer;
+        velocity = attackVelocity * mousePositionToPlayer;
 
         yield return new WaitForSeconds(meleeTime / 2);
         meleeAttackClip.Play();
@@ -283,10 +318,31 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        addedVelocity = Vector2.zero;
+        velocity = Vector2.zero;
         armAnim.Play("Arm Idle");
 
         attacking = false;
+        movementLocked = false;
+    }
+    public void Shoot()
+    {
+
+        if (shootIcicle && !movementLocked) StartCoroutine(ShootCoroutine());
+        shootIcicle = false;
+    }
+    IEnumerator ShootCoroutine()
+    {
+        attacking = true;
+        armAnim.Play("Arm Shoot");
+
+        movementLocked = true;
+
+        Instantiate(icicle, firePosition.position, firePosition.rotation);
+
+        yield return new WaitForSeconds(icicleTime);
+        movementLocked = false;
+        attacking = false;
+
     }
     public void Dash()
     {
