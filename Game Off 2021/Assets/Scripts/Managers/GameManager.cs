@@ -29,6 +29,15 @@ public class GameManager : MonoBehaviour
         StartCoroutine(LoadScene(sceneName));
     }
 
+    public void LoadWithDelay(string sceneName, float delayTime)
+    {
+        StartCoroutine(Delay(sceneName, delayTime));
+    }
+    IEnumerator Delay(string sceneName, float delayTime)
+    {
+        yield return new WaitForSeconds(delayTime);
+        StartCoroutine(LoadScene(sceneName));
+    }
     public IEnumerator LoadScene(string sceneName)
     {
         loadingScene = true;

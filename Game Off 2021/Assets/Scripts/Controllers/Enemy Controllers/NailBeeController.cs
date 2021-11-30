@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NailBeeController : MonoBehaviour
+public class NailBeeController : MonoBehaviour, EnemyInterface
 {
     public enum State
     {
@@ -219,10 +219,9 @@ public class NailBeeController : MonoBehaviour
 
     IEnumerator DieState()
     {
-        while (state == State.Die)
-        {
-            yield return 0;
-        }
+        anim.Play("Nail Die " + Direction());
+        yield return new WaitForSeconds(0.8f);
+        Destroy(gameObject);
     }
 
     ////////////////////////////////////////////////////////////////
@@ -280,8 +279,8 @@ public class NailBeeController : MonoBehaviour
 
     public void OnHit(int damage)
     {
-        state = State.Hit;
         health -= damage;
+        state = health <= 0 ? State.Die : State.Hit;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

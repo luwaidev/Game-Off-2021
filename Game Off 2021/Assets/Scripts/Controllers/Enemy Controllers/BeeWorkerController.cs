@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BeeWorkerController : MonoBehaviour
+public class BeeWorkerController : MonoBehaviour, EnemyInterface
 {
     public enum State
     {
@@ -16,9 +16,6 @@ public class BeeWorkerController : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private List<Transform> nearbyEnemies = new List<Transform>();
-
-    [Header("Health Settings")]
-    float shield;
     public int health { get; set; }
 
     [Header("State Settings")]
@@ -27,6 +24,7 @@ public class BeeWorkerController : MonoBehaviour
 
     [Header("Follow Player")]
     public bool leader;
+    public bool switched;
     public BeeWorkerController beeAhead;
     public Vector2 targetPosition;
 
@@ -36,14 +34,8 @@ public class BeeWorkerController : MonoBehaviour
     [SerializeField] float aggroDistance;
     [SerializeField] float movementSpeed;
 
-    [Header("Attack Player")]
-    [SerializeField] float attackDistance;
-    [SerializeField] float attackDamage;
-    [SerializeField] float attackVelocity;
-
     [Header("Hit settings")]
-    [SerializeField] float hitTime;
-    [SerializeField] float knockbackSpeed;
+    [SerializeField] float deathTime;
     [Header("Repel Settings")]
     [SerializeField] float maxRepel;
     [SerializeField] float repelFalloff;
@@ -66,7 +58,6 @@ public class BeeWorkerController : MonoBehaviour
     void NextState()
     {
         string methodName = state.ToString() + "State";
-        print(methodName);
 
         // Get method
         System.Reflection.MethodInfo info =
@@ -102,9 +93,16 @@ public class BeeWorkerController : MonoBehaviour
         targetPosition = beeAhead.targetPosition;
         while (state == State.Follow)
         {
-            if (Vector2.Distance(targetPosition, transform.position) < 0.1f)
+            switched = false;
+            if (Vector2.Distance(targetPosition, transform.position) < 1f)
             {
                 targetPosition = beeAhead.targetPosition;
+            }
+
+            if (switched)
+            {
+                targetPosition = beeAhead.transform.position;
+                switched = true;
             }
 
             Vector2 target = targetPosition - (Vector2)transform.position;
@@ -130,7 +128,13 @@ public class BeeWorkerController : MonoBehaviour
 
         while (state == State.Lead)
         {
-            if (Vector2.Distance(targetPosition, transform.position) < 0.1f)
+            if (switched)
+            {
+                yield return new WaitForEndOfFrame();
+                switched = false;
+            }
+
+            if (Vector2.Distance(targetPosition, transform.position) < 1f)
             {
                 // Randomise Position
                 playerPosition = PlayerController.instance.transform.position;
@@ -138,10 +142,7 @@ public class BeeWorkerController : MonoBehaviour
 
                 targetPosition.y = playerPosition.y + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-playerDistance * Random.Range(0, playerDistance) + Mathf.Pow(playerDistance, 2f)) + playerDistance);
 
-                if (Vector2.Distance(playerPosition, targetPosition) < attackDistance)
-                {
-                    targetPosition = playerPosition;
-                }
+                switched = true;
             }
 
             Vector2 target = targetPosition - (Vector2)transform.position;
@@ -155,13 +156,18 @@ public class BeeWorkerController : MonoBehaviour
 
     IEnumerator DieState()
     {
-        Debug.Log("Die: Enter");
-        while (state == State.Die)
-        {
+        velocity = Vector2.zero;
+        GetComponent<Animator>().Play("Bee Die");
+        yield return new WaitForSeconds(deathTime);
+        Destroy(gameObject);
+    }
 
-            yield return 0;
-        }
-        Debug.Log("Die: Exit");
+    IEnumerator HitState()
+    {
+        velocity = Vector2.zero;
+        GetComponent<Animator>().Play("Bee Die");
+        yield return new WaitForSeconds(deathTime);
+        Destroy(gameObject);
     }
 
     ////////////////////////////////////////////////////////////////
@@ -176,6 +182,7 @@ public class BeeWorkerController : MonoBehaviour
     void Start()
     {
         NextState();
+        health = 20;
     }
 
     void SetDirection()
@@ -209,16 +216,31 @@ public class BeeWorkerController : MonoBehaviour
     public void OnHit(int damage)
     {
         health -= damage;
+        GetComponent<Animator>().Play("Bee Hit");
+        if (health <= 0) state = State.Die;
     }
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "Player") state = State.Follow;
         else if (other.tag == "Enemy") nearbyEnemies.Add(other.gameObject.transform);
+
+        if (other.gameObject.tag == "Walls" && leader)
+        {
+            print("Bruh");
+            // Randomise Position
+            Vector2 playerPosition = PlayerController.instance.transform.position;
+            targetPosition.x = playerPosition.x + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-playerDistance * Random.Range(0, playerDistance) + Mathf.Pow(playerDistance, 2f)) + playerDistance);
+
+            targetPosition.y = playerPosition.y + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-playerDistance * Random.Range(0, playerDistance) + Mathf.Pow(playerDistance, 2f)) + playerDistance);
+            switched = true;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.tag == "Enemy") nearbyEnemies.Remove(other.gameObject.transform);
     }
+
 }

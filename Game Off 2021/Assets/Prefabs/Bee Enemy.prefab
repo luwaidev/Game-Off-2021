@@ -29,7 +29,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2397770508728669231}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.95, y: -10.9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -73,8 +73,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -655230325
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 5075547396454264642, guid: c2232277b2f3f1c4cb16c0310d3048ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -164,18 +164,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   state: 0
   leader: 1
+  switched: 0
   beeAhead: {fileID: 0}
   targetPosition: {x: 0, y: 0}
-  playerDistance: 3
-  aggroDistance: 5
-  movementSpeed: 2.5
-  attackDistance: 0
-  attackDamage: 0
-  attackVelocity: 0
-  hitTime: 0
-  knockbackSpeed: 0
-  maxRepel: 3
-  repelFalloff: 5
+  playerDistance: 2
+  aggroDistance: 6.66
+  movementSpeed: 3.5
+  deathTime: 0.8
+  maxRepel: 5
+  repelFalloff: 10
 --- !u!95 &2397770508728669216
 Animator:
   serializedVersion: 3

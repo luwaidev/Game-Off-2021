@@ -40,6 +40,7 @@ public class ArtilleryController : MonoBehaviour, EnemyInterface
 
     [Header("Hit settings")]
     [SerializeField] float hitTime;
+    [SerializeField] float deathTime;
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
@@ -111,7 +112,6 @@ public class ArtilleryController : MonoBehaviour, EnemyInterface
 
     IEnumerator HitState()
     {
-
         yield return new WaitForSeconds(hitTime);
 
         state = State.Firing;
@@ -120,13 +120,9 @@ public class ArtilleryController : MonoBehaviour, EnemyInterface
 
     IEnumerator DieState()
     {
-        Debug.Log("Die: Enter");
-        while (state == State.Die)
-        {
-
-            yield return 0;
-        }
-        Debug.Log("Die: Exit");
+        anim.Play("Artillery Die");
+        yield return new WaitForSeconds(deathTime);
+        Destroy(gameObject);
     }
 
     ////////////////////////////////////////////////////////////////
@@ -151,8 +147,10 @@ public class ArtilleryController : MonoBehaviour, EnemyInterface
 
     public void OnHit(int damage)
     {
-        state = State.Hit;
         health -= damage;
+
+        state = health <= 0 ? State.Die : State.Hit;
+
     }
 
 }

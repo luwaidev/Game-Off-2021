@@ -82,7 +82,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         abilities = new List<Action>();
-        abilities.Add(Dash);
+        // abilities.Add(Dash);
+        // abilities.Add(Shoot);
         StartCoroutine(OnSceneLoad());
     }
 
@@ -160,11 +161,16 @@ public class PlayerController : MonoBehaviour
     void CheckHit()
     {
         RaycastHit2D hit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.2f, enemyLayer);
-        if (hit && !movementLocked)
+        if (hit && !hit.collider.isTrigger && !movementLocked)
         {
             velocity = -hit.collider.transform.position.normalized * knockbackSpeed;
 
             StartCoroutine(Hit());
+
+            if (hit.collider.tag == "Projectile")
+            {
+                Destroy(hit.collider.gameObject);
+            }
         }
     }
 
@@ -192,7 +198,7 @@ public class PlayerController : MonoBehaviour
         movementLocked = true;
         arm.gameObject.SetActive(false);
         anim.SetBool("Dead", true);
-        GameManager.instance.Load("Game");
+        GameManager.instance.LoadWithDelay("Game", 2);
     }
 
 
@@ -248,8 +254,7 @@ public class PlayerController : MonoBehaviour
     // Called when fire button is pressed
     public void OnShoot(InputValue value)
     {
-        if (!attacking && !movementLocked) StartCoroutine(MeleeAttackCoroutine());
-        else attackedAgain = true;
+        shootIcicle = true;
     }
 
     ////////////////////////////////////////////////////////////////
@@ -336,7 +341,7 @@ public class PlayerController : MonoBehaviour
         armAnim.Play("Arm Shoot");
 
         movementLocked = true;
-
+        SetDirection();
         Instantiate(icicle, firePosition.position, firePosition.rotation);
 
         yield return new WaitForSeconds(icicleTime);

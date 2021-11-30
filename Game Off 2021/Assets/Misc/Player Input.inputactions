@@ -22,14 +22,6 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Fire",
-                    "type": "Button",
-                    "id": "76250e78-2f9e-48e6-8b1a-206009d11111",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
                     "name": "MouseMove",
                     "type": "Value",
                     "id": "6156100e-eec4-4e13-8270-54b91279bc0f",
@@ -41,6 +33,22 @@
                     "name": "Dash",
                     "type": "Value",
                     "id": "0707f03a-c1af-4423-8ed8-8e56ff5975c8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Fire",
+                    "type": "Button",
+                    "id": "76250e78-2f9e-48e6-8b1a-206009d11111",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Shoot",
+                    "type": "Button",
+                    "id": "326f240b-8c62-430c-a7a5-b2082671a19d",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
@@ -214,6 +222,28 @@
                 },
                 {
                     "name": "",
+                    "id": "b9f18342-3708-4c5b-bbda-39fe094f0233",
+                    "path": "<Mouse>/Position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "MouseMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "24abdac6-1d8a-49d5-823a-90b7d403bf24",
+                    "path": "<Keyboard>/Shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "143bb1cd-cc10-4eca-a2f0-a3664166fe91",
                     "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
@@ -269,23 +299,12 @@
                 },
                 {
                     "name": "",
-                    "id": "b9f18342-3708-4c5b-bbda-39fe094f0233",
-                    "path": "<Mouse>/Position",
+                    "id": "6c611762-c074-43b3-a2d4-dc8220be646a",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "MouseMove",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "24abdac6-1d8a-49d5-823a-90b7d403bf24",
-                    "path": "<Keyboard>/Shift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Dash",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Shoot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
