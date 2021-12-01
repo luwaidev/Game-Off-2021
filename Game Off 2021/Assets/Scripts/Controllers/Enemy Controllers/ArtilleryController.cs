@@ -137,6 +137,7 @@ public class ArtilleryController : MonoBehaviour, EnemyInterface
     void Start()
     {
         NextState();
+        health = 35;
     }
 
     private void FixedUpdate()

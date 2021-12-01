@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class HealthController : MonoBehaviour
 {
+    public static HealthController instance;
     public Transform healthUi;
     public int playerMaxHealth;
     public int currentPlayerHealth;
@@ -12,7 +13,7 @@ public class HealthController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        instance = this;
     }
 
     // Update is called once per frame
@@ -40,12 +41,15 @@ public class HealthController : MonoBehaviour
         currentPlayerHealth = PlayerController.instance.health;
     }
 
-    void OnAddHealth()
+    public void OnAddHealth()
     {
-        Vector2 position = Vector2.zero;
+        Vector3 position = Vector2.zero;
         position.y = 4;
-        position.x = healthUi.GetChild(healthUi.childCount - 1).transform.position.x + 1.25f;
-        GameObject health = Instantiate(healthObject, position, Quaternion.identity);
+        position.x = healthUi.GetChild(healthUi.childCount - 1).transform.localPosition.x + 1.25f;
+        position.z = 10;
+        GameObject health = Instantiate(healthObject, Vector2.zero, Quaternion.identity);
+        health.transform.parent = healthUi;
+        health.transform.localPosition = position;
     }
 
     public void playerRegenHealth()

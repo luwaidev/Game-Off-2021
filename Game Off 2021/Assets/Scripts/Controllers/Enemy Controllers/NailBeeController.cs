@@ -252,6 +252,7 @@ public class NailBeeController : MonoBehaviour, EnemyInterface
     {
         NextState();
         patrolCenter = transform.position;
+        health = 35;
     }
 
     private void FixedUpdate()

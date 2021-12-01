@@ -18,6 +18,8 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     private Rigidbody2D rb;
     private Animator anim;
     private List<Transform> nearbyEnemies = new List<Transform>();
+    public GameObject block;
+    public GameObject healthBar;
 
     [Header("State Settings")]
     public State state;
@@ -82,8 +84,12 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
             if (Vector2.Distance(transform.position, PlayerController.instance.transform.position) < aggroDistance)
             {
                 state = SetRandomState();
+                block.SetActive(true);
+                healthBar.transform.parent.GetComponent<Animator>().SetBool("Active", true);
             }
 
+            // transform.position = LockPosition(new Vector2(Random.Range(minPosition.x, maxPosition.x), Random.Range(minPosition.y, maxPosition.y)));
+            // yield return new WaitForSeconds(5);
             yield return null;
 
         }
@@ -94,13 +100,15 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     {
         for (int i = 0; i < 2; i++)
         {
+            GetComponent<BoxCollider2D>().enabled = true;
+            anim.Play("HBoss Smash");
             Vector2 position = Vector2.zero;
             bool playerOnRightSide = PlayerController.instance.transform.position.x > (maxPosition.x + minPosition.x) / 2;
             position.x = PlayerController.instance.transform.position.x + (playerOnRightSide ? -smashDistance : smashDistance);
             position.y = PlayerController.instance.transform.position.y;
 
             transform.position = LockPosition(position);
-
+            print(LockPosition(position));
             yield return new WaitForSeconds(smashPrepTime - 0.5f);
 
             playerOnRightSide = PlayerController.instance.transform.position.x > (maxPosition.x + minPosition.x) / 2;
@@ -109,9 +117,13 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
             yield return new WaitForSeconds(0.5f);
             smashCollider.SetActive(true);
             yield return new WaitForSeconds(smashAfterTime / 2);
+            GetComponent<BoxCollider2D>().enabled = false;
             smashCollider.SetActive(false);
             yield return new WaitForSeconds(smashAfterTime / 2);
             transform.localScale = new Vector3(1, 1, 1);
+
+
+            anim.Play("HBoss Hidden");
         }
 
         yield return new WaitForSeconds(recoveryTime);
@@ -123,20 +135,24 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     {
         for (int j = 0; j < 2; j++)
         {
+            anim.Play("HBoss Shoot");
             Vector2 position = Vector2.zero;
             bool playerOnRightSide = PlayerController.instance.transform.position.x > (maxPosition.x + minPosition.x) / 2;
             position.x = PlayerController.instance.transform.position.x + (playerOnRightSide ? shootDistance : -shootDistance);
             bool playerAbove = PlayerController.instance.transform.position.y > (maxPosition.y + minPosition.y) / 2;
             position.y = PlayerController.instance.transform.position.y + (playerAbove ? shootDistance : -shootDistance);
 
+            GetComponent<BoxCollider2D>().enabled = true;
             transform.position = LockPosition(position);
-
             yield return new WaitForSeconds(shootPrepTime);
             for (int i = 0; i < shootingPositions.childCount; i++)
             {
-                Instantiate(projectile, shootingPositions.GetChild(i));
+                Instantiate(projectile, shootingPositions.GetChild(i).position, shootingPositions.GetChild(i).rotation);
             }
             yield return new WaitForSeconds(shootAfterTime);
+            GetComponent<BoxCollider2D>().enabled = false;
+
+            anim.Play("HBoss Hidden");
         }
 
 
@@ -150,14 +166,14 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     {
         for (int j = 0; j < 5; j++)
         {
+            anim.Play("HBoss Pop");
             transform.position = LockPosition(PlayerController.instance.transform.position);
 
-            yield return new WaitForSeconds(shootPrepTime);
-            for (int i = 0; i < shootingPositions.childCount; i++)
-            {
-                Instantiate(projectile, shootingPositions.GetChild(i));
-            }
-            yield return new WaitForSeconds(shootAfterTime);
+            yield return new WaitForSeconds(popPrepTime);
+            GetComponent<BoxCollider2D>().enabled = true;
+            yield return new WaitForSeconds(popAfterTime);
+            GetComponent<BoxCollider2D>().enabled = false;
+            anim.Play("HBoss Hidden");
         }
 
 
@@ -195,25 +211,20 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     void Start()
     {
         NextState();
+        health = 120;
     }
 
     public void OnHit(int damage)
     {
         health -= damage;
         state = health <= 0 ? State.Die : State.Hit;
+        healthBar.transform.localScale = new Vector3(9.4f * ((float)health / (float)120), 0.75f, 1);
+        print((health / 120));
+        healthBar.GetComponent<Animator>().Play("HBar Hit");
     }
-    private void FixedUpdate()
-    {
-    }
-
-    void Hit()
-    {
-
-    }
-
     State SetRandomState()
     {
-        switch (Random.Range(0, 2))
+        switch (Random.Range(0, 3))
         {
             case 0:
                 return State.Smash;

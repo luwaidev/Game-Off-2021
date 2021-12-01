@@ -16,14 +16,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] float sceneTransitionTime;
     public bool loadingScene;
     public bool paused;
+    public Vector2 spawnPosition;
 
     private void Awake()
     {
         if (instance != null) Destroy(gameObject);
 
         instance = this;
+        DontDestroyOnLoad(gameObject);
     }
+    private void Start()
+    {
 
+        transition.SetTrigger("Transition"); // Start transitioning scene out
+    }
     public void Load(string sceneName)
     {
         StartCoroutine(LoadScene(sceneName));
@@ -47,10 +53,26 @@ public class GameManager : MonoBehaviour
         // Start loading scene
         AsyncOperation load = SceneManager.LoadSceneAsync(sceneName);
         load.allowSceneActivation = false;
-        while (!load.isDone) yield return null;
+        while (!load.isDone)
+        {
+            if (load.progress >= 0.9f)
+            {
+                load.allowSceneActivation = true;
+            }
+
+            yield return null;
+        }
+        load.allowSceneActivation = true;
+
 
         transition.SetTrigger("Transition"); // Start transitioning scene back
 
+        yield return new WaitForEndOfFrame();
+        if (sceneName == "Game")
+        {
+            PlayerController.instance.transform.position = spawnPosition;
+            UpgradeManager.instance.UpdateUpgrade();
+        }
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition
         loadingScene = false;
     }

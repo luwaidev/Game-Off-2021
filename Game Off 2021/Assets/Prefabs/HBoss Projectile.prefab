@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1380975008087274899}
   - component: {fileID: 208543839570559485}
   - component: {fileID: 2841799586978752442}
+  - component: {fileID: 44834729749328327}
   m_Layer: 6
   m_Name: HBoss Projectile
   m_TagString: Untagged
@@ -70,8 +71,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -35164051
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: -4353433297107165696, guid: d4c7b48b7cb48074091fce92878c4030, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -94,7 +95,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -122,4 +123,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 544b630f82db76d4dbafea167eba57f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
+  speed: 2
+--- !u!50 &44834729749328327
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152437727416307906}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4

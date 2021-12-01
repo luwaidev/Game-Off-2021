@@ -65,6 +65,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AudioClip[] runningClips;
     [SerializeField] AudioSource runningSource;
     [SerializeField] AudioSource meleeAttackClip;
+    [SerializeField] AudioSource icicleClip;
+    [SerializeField] AudioSource hitClip;
 
 
     // Set References
@@ -163,7 +165,7 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D hit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.2f, enemyLayer);
         if (hit && !hit.collider.isTrigger && !movementLocked)
         {
-            velocity = -hit.collider.transform.position.normalized * knockbackSpeed;
+            velocity = -(hit.collider.transform.position - transform.position).normalized * knockbackSpeed;
 
             StartCoroutine(Hit());
 
@@ -177,6 +179,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator Hit()
     {
         anim.Play("Player Hit " + direction); // Play animation
+        hitClip.Play();
         movementLocked = true;
         health -= 1;
         yield return new WaitForSeconds(stunTime);
@@ -301,10 +304,10 @@ public class PlayerController : MonoBehaviour
         attacking = true;
         armAnim.Play("Arm Melee 1");
 
-        movementLocked = true;
-        var mouse = Mouse.current; // Get mouse
-        Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
-        velocity = attackVelocity * mousePositionToPlayer;
+        // movementLocked = true;
+        // var mouse = Mouse.current; // Get mouse
+        // Vector2 mousePositionToPlayer = ((Vector2)Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()) - (Vector2)transform.position).normalized * mouseDistance; // Get mouse positions
+        // velocity = attackVelocity * mousePositionToPlayer;
 
         yield return new WaitForSeconds(meleeTime / 2);
         meleeAttackClip.Play();
@@ -320,6 +323,8 @@ public class PlayerController : MonoBehaviour
             attackedAgain = false;
             OnMeleeAttack();
             yield return new WaitForSeconds(meleeTime / 2);
+            armAnim.Play("Arm Idle");
+            yield return new WaitForSeconds(meleeTime / 2);
         }
 
 
@@ -327,7 +332,12 @@ public class PlayerController : MonoBehaviour
         armAnim.Play("Arm Idle");
 
         attacking = false;
-        movementLocked = false;
+        // movementLocked = false;
+
+        // Check if walking in opposite direction
+        bool oppositeDirection = (movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right") ||
+                                 (movementDirection == "Up" && direction == "Down") || (movementDirection == "Down" && direction == "Up");
+        if (!movementLocked) velocity = input * (oppositeDirection ? reverseMovementSpeed : movementSpeed); // Set velocity to regular or reversing speed
     }
     public void Shoot()
     {
@@ -344,6 +354,7 @@ public class PlayerController : MonoBehaviour
         SetDirection();
         Instantiate(icicle, firePosition.position, firePosition.rotation);
 
+        icicleClip.Play();
         yield return new WaitForSeconds(icicleTime);
         movementLocked = false;
         attacking = false;

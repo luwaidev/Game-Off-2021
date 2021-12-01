@@ -93,7 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 736364d5fde34dd49bc231adffba8132, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  icicleSpeed: 10
+  icicleSpeed: 7
   damage: 0
 --- !u!1 &8294073213963888268
 GameObject:

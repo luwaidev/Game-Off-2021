@@ -187,7 +187,7 @@ public class BeeWorkerController : MonoBehaviour, EnemyInterface
 
     void SetDirection()
     {
-        sr.flipX = velocity.x > 0 ? false : true;
+        sr.flipX = velocity.x > 0 ? true : false;
     }
     private void FixedUpdate()
     {
@@ -211,6 +211,7 @@ public class BeeWorkerController : MonoBehaviour, EnemyInterface
 
         Vector2 enemyToSelf = (nearbyEnemies[closestEnemyIndex].position - transform.position) * repelFalloff;
         velocity += new Vector2(-Mathf.Pow(enemyToSelf.x, 1f / 3f), -Mathf.Pow(enemyToSelf.x, 1f / 3f)) + Vector2.one * maxRepel;
+        print(new Vector2(-Mathf.Pow(enemyToSelf.x, 1f / 3f), -Mathf.Pow(enemyToSelf.x, 1f / 3f)) + Vector2.one * maxRepel);
     }
 
     public void OnHit(int damage)
@@ -223,12 +224,13 @@ public class BeeWorkerController : MonoBehaviour, EnemyInterface
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Player") state = State.Follow;
-        else if (other.tag == "Enemy") nearbyEnemies.Add(other.gameObject.transform);
+        if (other.tag == "Enemy")
+        {
+            print("thing"); nearbyEnemies.Add(other.gameObject.transform);
+        }
 
         if (other.gameObject.tag == "Walls" && leader)
         {
-            print("Bruh");
             // Randomise Position
             Vector2 playerPosition = PlayerController.instance.transform.position;
             targetPosition.x = playerPosition.x + Mathf.Sign(Random.Range(-1, 1)) * (-Mathf.Sqrt(-playerDistance * Random.Range(0, playerDistance) + Mathf.Pow(playerDistance, 2f)) + playerDistance);
