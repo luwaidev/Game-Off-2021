@@ -195,7 +195,7 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     IEnumerator DieState()
     {
         yield return new WaitForSeconds(0.8f);
-        Destroy(gameObject);
+        GameManager.instance.LoadScene("Main Menu");
     }
 
     ////////////////////////////////////////////////////////////////
@@ -219,7 +219,6 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
         health -= damage;
         state = health <= 0 ? State.Die : State.Hit;
         healthBar.transform.localScale = new Vector3(9.4f * ((float)health / (float)120), 0.75f, 1);
-        print((health / 120));
         healthBar.GetComponent<Animator>().Play("HBar Hit");
     }
     State SetRandomState()
@@ -238,6 +237,7 @@ public class HoneyBossController : MonoBehaviour, EnemyInterface
     }
     Vector2 LockPosition(Vector2 position)
     {
+        position = new Vector2(Mathf.Clamp(position.x, minPosition.x, maxPosition.x), Mathf.Clamp(position.y, minPosition.y, maxPosition.y));
         position.y = Mathf.Round((position.y - minPosition.y) * 1.063829f) / 1.063829f + minPosition.y;
         if (Mathf.Round(position.y) % 2 == 0)
         {

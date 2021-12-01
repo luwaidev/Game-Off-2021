@@ -6,6 +6,8 @@ public class MainMenuController : MonoBehaviour
 {
     public void Play()
     {
-        GameManager.instance.LoadScene("Game");
+
+        GameManager.instance.Load("Game");
+
     }
 }

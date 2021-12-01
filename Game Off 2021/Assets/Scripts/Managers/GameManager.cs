@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null) Destroy(gameObject);
+        if (GameObject.FindGameObjectWithTag("GameController") != gameObject) Destroy(gameObject);
 
         instance = this;
         DontDestroyOnLoad(gameObject);
@@ -71,6 +71,7 @@ public class GameManager : MonoBehaviour
         if (sceneName == "Game")
         {
             PlayerController.instance.transform.position = spawnPosition;
+            Camera.main.transform.position = (Vector3)spawnPosition - Vector3.forward * 10;
             UpgradeManager.instance.UpdateUpgrade();
         }
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition

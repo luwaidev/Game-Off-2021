@@ -6,7 +6,12 @@ public class SpawnPoint : MonoBehaviour
 {
     void OnTriggerEnter2D(Collider2D collider)
     {
-        GameManager.instance.spawnPosition = transform.position;
-        GetComponent<Animator>().Play("Respawn Set");
+        if (GameManager.instance.spawnPosition != (Vector2)transform.position)
+        {
+            GameManager.instance.spawnPosition = transform.position;
+            GetComponent<Animator>().Play("Respawn Set");
+
+            PlayerController.instance.health = HealthController.instance.playerMaxHealth;
+        }
     }
 }

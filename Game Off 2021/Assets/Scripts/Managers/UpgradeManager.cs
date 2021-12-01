@@ -25,7 +25,7 @@ public class UpgradeManager : MonoBehaviour
         if (instance != this)
         {
             instance = this;
-            if (PlayerController.instance.abilities.Count > 0)
+            if (PlayerController.instance != null && PlayerController.instance.abilities.Count > 0)
             {
                 Destroy(GameObject.Find("Icicle Upgrade"));
             }
@@ -73,6 +73,11 @@ public class UpgradeManager : MonoBehaviour
         PlayerController.instance.health = playerHealth;
         PlayerController.instance.meleeDamage = meleeDamageUpgrade;
         PlayerController.instance.icicleDamage = icicleDamageUpgrade;
+
+        if (PlayerController.instance != null && PlayerController.instance.abilities.Count > 0)
+        {
+            Destroy(GameObject.Find("Icicle Upgrade"));
+        }
     }
 
     void ShowUpgrade(string upgrade)
