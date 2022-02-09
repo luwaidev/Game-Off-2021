@@ -6,7 +6,7 @@ public class SpawnPoint : MonoBehaviour
 {
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (GameManager.instance.spawnPosition != (Vector2)transform.position)
+        if (collider.tag == "Player" && GameManager.instance.spawnPosition != (Vector2)transform.position)
         {
             GameManager.instance.spawnPosition = transform.position;
             GetComponent<Animator>().Play("Respawn Set");

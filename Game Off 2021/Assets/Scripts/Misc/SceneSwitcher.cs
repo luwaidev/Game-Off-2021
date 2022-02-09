@@ -20,6 +20,10 @@ public class SceneSwitcher : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Player") GameManager.instance.Load(targetScene);
+        if (other.tag == "Player")
+        {
+            GameManager.instance.spawnPosition = Vector2.zero;
+            GameManager.instance.Load(targetScene);
+        }
     }
 }

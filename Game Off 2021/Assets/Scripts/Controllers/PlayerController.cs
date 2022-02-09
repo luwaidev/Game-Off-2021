@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
+using UnityEngine.SceneManagement;
 
 
 public class PlayerController : MonoBehaviour
@@ -11,7 +12,7 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     public static PlayerController instance;
     [SerializeField] BoxCollider2D arm;
-    [SerializeField] Animator armAnim;
+    public Animator armAnim;
     [SerializeField] SpriteRenderer armSR;
     [SerializeField] LayerMask enemyLayer;
     private BoxCollider2D bc;
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float dashTime;
 
     [Header("Combat Settings")]
+    public bool hasMelee;
     public bool attacking;
     [SerializeField] float attackVelocity;
     [SerializeField] float meleeTime;
@@ -65,6 +67,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AudioClip[] runningClips;
     [SerializeField] AudioSource runningSource;
     [SerializeField] AudioSource meleeAttackClip;
+    [SerializeField] AudioSource meleeAttackHitClip;
     [SerializeField] AudioSource icicleClip;
     [SerializeField] AudioSource hitClip;
 
@@ -87,6 +90,7 @@ public class PlayerController : MonoBehaviour
         // abilities.Add(Dash);
         // abilities.Add(Shoot);
         StartCoroutine(OnSceneLoad());
+
     }
 
     // Main Loop
@@ -104,12 +108,23 @@ public class PlayerController : MonoBehaviour
         }
 
         CheckHit();
-        if (!movementLocked) Animations(); // Set player animations
+        if (!movementLocked)
+        {
+            Animations();
+            rb.velocity = velocity + addedVelocity; // Set velocity
+        }
+        else
+        {
+            // // Check if walking in opposite direction
+            // bool oppositeDirection = rb.velocity.magnitude > 0.01f && ((movementDirection == "Right" && direction == "Left") || (movementDirection == "Left" && direction == "Right"));
+            // anim.Play("Player " + "Idle " + direction + (oppositeDirection ? " Back" : ""));
 
-        rb.velocity = velocity + addedVelocity; // Set velocity
+        }
+
 
         Audio(); // Set audio
         ResetValues();
+
     }
 
     void ResetValues()
@@ -120,7 +135,8 @@ public class PlayerController : MonoBehaviour
 
     void Audio()
     {
-        if (!runningSource.isPlaying && !attacking && velocity != Vector2.zero)
+        if (!runningSource.isPlaying && !attacking && !movementLocked
+        && velocity != Vector2.zero)
         {
             runningSource.clip = runningClips[Random.Range(0, runningClips.Length)];
             runningSource.Play();
@@ -163,10 +179,10 @@ public class PlayerController : MonoBehaviour
     void CheckHit()
     {
         RaycastHit2D hit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.2f, enemyLayer);
-        if (hit && !hit.collider.isTrigger && !movementLocked)
+        if (hit && !hit.collider.isTrigger && hit.collider.enabled && !movementLocked)
         {
             velocity = -(hit.collider.transform.position - transform.position).normalized * knockbackSpeed;
-
+            rb.velocity = velocity;
             StartCoroutine(Hit());
 
             if (hit.collider.tag == "Projectile")
@@ -201,7 +217,9 @@ public class PlayerController : MonoBehaviour
         movementLocked = true;
         arm.gameObject.SetActive(false);
         anim.SetBool("Dead", true);
-        GameManager.instance.LoadWithDelay("Game", 2);
+        GameManager.instance.LoadWithDelay(SceneManager.GetActiveScene().name, 2);
+
+        rb.velocity = Vector2.zero;
     }
 
 
@@ -250,6 +268,7 @@ public class PlayerController : MonoBehaviour
     // Called when fire button is pressed
     public void OnFire(InputValue value)
     {
+        if (!hasMelee) return;
         if (!attacking && !movementLocked) StartCoroutine(MeleeAttackCoroutine());
         else attackedAgain = true;
     }
@@ -264,14 +283,18 @@ public class PlayerController : MonoBehaviour
     //                      Cutscene Events                       //
     ////////////////////////////////////////////////////////////////
 
-    // Walk out of darkness 
+
     public IEnumerator OnSceneLoad()
     {
-        anim.Play("Player Wake");
-        movementLocked = true;
-        Camera.main.GetComponent<CameraController>().inCutscene = true;
-        arm.gameObject.SetActive(false);
-        yield return new WaitForSeconds(loadInWaitTime);
+        // TODO Check if in other world and walk out of darkness instead
+        if (SceneManager.GetActiveScene().name == "Area 1")
+        {
+            anim.Play("Player Wake");
+            movementLocked = true;
+            Camera.main.GetComponent<CameraController>().inCutscene = true;
+            arm.gameObject.SetActive(false);
+            yield return new WaitForSeconds(loadInWaitTime);
+        }
         arm.gameObject.SetActive(true);
         Camera.main.GetComponent<CameraController>().inCutscene = false;
         movementLocked = false;
@@ -295,7 +318,9 @@ public class PlayerController : MonoBehaviour
         // Iterate through enemies and do damage to them
         for (int i = 0; i < enemiesInRange.Length; i++)
         {
-            if (!enemiesInRange[i].collider.isTrigger) enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
+            if (i == 0) meleeAttackHitClip.Play();
+            if (!enemiesInRange[i].collider.isTrigger && enemiesInRange[i].collider.tag == "Enemy") enemiesInRange[i].collider.GetComponent<EnemyInterface>().OnHit(meleeDamage);
+            if (!GameManager.instance.effect) GameManager.instance.StartCoroutine(GameManager.instance.HitEffect());
         }
     }
 
@@ -362,19 +387,18 @@ public class PlayerController : MonoBehaviour
     }
     public void Dash()
     {
-
         if (dashed && !movementLocked) StartCoroutine(DashCoroutine());
     }
 
     IEnumerator DashCoroutine()
     {
         dashed = false;
-        velocity = input * dashSpeed;
+        rb.velocity = input * dashSpeed;
         movementLocked = true;
-
+        print("Bruh");
         yield return new WaitForSeconds(dashTime);
 
-        velocity = input * movementSpeed;
+        rb.velocity = input * movementSpeed;
         movementLocked = false;
     }
 

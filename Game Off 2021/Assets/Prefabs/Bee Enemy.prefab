@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2397770508728669216}
   m_Layer: 6
   m_Name: Bee Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -74,7 +74,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -655230325
-  m_SortingLayer: 2
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 5075547396454264642, guid: c2232277b2f3f1c4cb16c0310d3048ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -162,17 +162,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a85b0e1db8d994187dd31296d53498, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
   state: 0
   leader: 1
   switched: 0
   beeAhead: {fileID: 0}
   targetPosition: {x: 0, y: 0}
-  playerDistance: 2
+  playerDistance: 3
   aggroDistance: 6.66
   movementSpeed: 3.5
   deathTime: 0.8
-  maxRepel: 5
-  repelFalloff: 10
+  maxRepel: -1
+  repelFalloff: 1
 --- !u!95 &2397770508728669216
 Animator:
   serializedVersion: 3

@@ -7,7 +7,7 @@ public class MainMenuController : MonoBehaviour
     public void Play()
     {
 
-        GameManager.instance.Load("Game");
+        GameManager.instance.Load("Area 1");
 
     }
 }

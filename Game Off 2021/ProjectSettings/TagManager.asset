@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Walls
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -45,11 +46,11 @@ TagManager:
   - name: Ground
     uniqueID: 1571370107
     locked: 0
-  - name: Default
-    uniqueID: 0
-    locked: 0
   - name: Wall Up
     uniqueID: 739347991
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   - name: Enemies
     uniqueID: 3639736971

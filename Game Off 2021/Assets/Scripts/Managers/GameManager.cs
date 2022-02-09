@@ -16,7 +16,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] float sceneTransitionTime;
     public bool loadingScene;
     public bool paused;
+    public bool upgrade;
     public Vector2 spawnPosition;
+    public bool effect;
 
     private void Awake()
     {
@@ -39,6 +41,7 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(Delay(sceneName, delayTime));
     }
+
     IEnumerator Delay(string sceneName, float delayTime)
     {
         yield return new WaitForSeconds(delayTime);
@@ -68,7 +71,7 @@ public class GameManager : MonoBehaviour
         transition.SetTrigger("Transition"); // Start transitioning scene back
 
         yield return new WaitForEndOfFrame();
-        if (sceneName == "Game")
+        if (sceneName != "Main Menu")
         {
             PlayerController.instance.transform.position = spawnPosition;
             Camera.main.transform.position = (Vector3)spawnPosition - Vector3.forward * 10;
@@ -76,18 +79,29 @@ public class GameManager : MonoBehaviour
         }
         yield return new WaitForSeconds(sceneTransitionTime); // Wait for transition
         loadingScene = false;
+
+        yield return new WaitForSeconds(1);
+        instance = this;
     }
 
     private void Update()
     {
-        Time.timeScale = paused ? 0 : 1;
+        Time.timeScale = (paused || effect || upgrade) ? 0 : 1;
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame) TogglePause();
+        if (!paused && Keyboard.current.escapeKey.wasPressedThisFrame) TogglePause();
     }
 
     public void TogglePause()
     {
         paused = !paused;
         pauseMenu.SetBool("Paused", paused);
+    }
+
+    public IEnumerator HitEffect()
+    {
+        effect = true;
+        yield return new WaitForSecondsRealtime(0.1f);
+        effect = false;
+
     }
 }
